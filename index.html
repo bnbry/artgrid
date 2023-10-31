@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>procgen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap" rel="stylesheet">
+    <script src="./grid.js"></script>
+    <script src="./palette.js"></script>
+    <script src="./artboard.js"></script>
+    <script src="./renderers.js"></script>
+    <style>
+      :root {
+        --bg-color: #101510;
+        --fg-color: #DCEFDC;
+        --hover-color: #CCDCCC;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--fg-color);
+        font-family: 'Major Mono Display', monospace;
+        font-size: 16px;
+      }
+
+      header {
+        background-color: var(--bg-color);
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+        z-index: 1;
+        height: 50px;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin: 0;
+        line-height: 30px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .upcase {
+        text-transform: uppercase;
+      }
+
+      .downcase {
+        text-transform: downcase;
+      }
+
+      aside {
+        position: fixed;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 10px;
+        z-index: 1;
+        height: 60px;
+      }
+
+      .controls {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr) repeat(2, 2fr);
+        grid-gap: 10px;
+        font-size: 16px;
+        text-align: right;
+      }
+
+      .button {
+        background-color: var(--fg-color);
+        color: var(--bg-color);
+        padding: 10px;
+        width: 100%;
+        line-height: 20px;
+      }
+
+      .button:hover {
+        background-color: var(--hover-color);
+        cursor: pointer;
+      }
+
+      .info {
+        background-color: var(--bg-color);
+        color: var(--fg-color);
+        padding: 10px;
+        width: 100%;
+        line-height: 20px;
+      }
+
+      canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--bg-color);
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>
+        <span>a</span><span>r</span><span>t</span>
+        <span>g</span><span class="upcase">r</span><span>i</span><span>d</span>
+      </h1>
+    </header>
+    <main>
+      <canvas></canvas>
+    </main>
+    <aside>
+      <div class="controls">
+        <div id="prev" class="button">prev</div>
+        <div id="next" class="button">next</div>
+        <div id="render" class="button">render</div>
+        <div id="clear" class="button">clear</div>
+        <div id="title" class="info">art grid</div>
+        <div id="author" class="info"></div>
+      </div>
+    </aside>
+    <script>
+      const cellSizePixels = 64;
+      let artboard = {};
+      let grid = {};
+      let currentSlidePos = 0;
+
+      window.addEventListener('load', () => {
+        const canvas = document.querySelector("canvas");
+        const palette = selectPalette();
+        artboard = new Artboard({
+          canvas,
+          palette,
+          dpr: window.devicePixelRatio
+        })
+        grid = createGrid({
+          cellSizePixels,
+          gridWidthPixels: artboard.width,
+          gridHeightPixels: artboard.height,
+        })
+
+        setPalette(palette);
+        adjustHeader();
+        setCurrentSlide(getCurrentSlidePos());
+
+        document.querySelector("#clear").addEventListener("click", (event) => {
+          event.preventDefault();
+          swapPalette();
+          grid.resize(cellSizePixels);
+          artboard.clear();
+        });
+
+        document.querySelector("#prev").addEventListener("click", (event) => {
+          event.preventDefault();
+          const newPos = Math.max(currentSlidePos - 1, 0)
+          setCurrentSlide(newPos)
+        });
+
+        document.querySelector("#next").addEventListener("click", (event) => {
+          event.preventDefault();
+          const newPos = Math.min(currentSlidePos + 1, slides.length - 1)
+          setCurrentSlide(newPos)
+        });
+
+        document.querySelector("#render").addEventListener("click", (event) => {
+          event.preventDefault();
+          swapPalette();
+          slideRenderer();
+        });
+      }, false);
+
+      const slideRenderer = () => {
+        const currentSlide = getCurrentSlide();
+        const delay = currentSlide.delay;
+        currentSlide.renderer({artboard, grid, delay});
+      }
+
+      const getCurrentSlide = () => {
+        return slides[currentSlidePos];
+      }
+
+      const setCurrentSlide = (newPos) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.set("slide", newPos);
+        window.history.replaceState({}, "", decodeURIComponent(`${window.location.pathname}?${urlParams}`));
+        currentSlidePos = newPos;
+        const currentSlide = getCurrentSlide();
+        artboard.clear();
+        document.querySelector("#title").textContent = currentSlide.title;
+        document.querySelector("#author").textContent = currentSlide.author;
+      }
+
+      const getCurrentSlidePos = () => {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        currentSlidePos = parseInt(urlParams.get("slide") || 0);
+
+        return currentSlidePos;
+      }
+
+      const setPalette = (palette) => {
+        const root = document.querySelector(":root");
+        root.style.setProperty("--bg-color", palette.getColor("dark"))
+        root.style.setProperty("--fg-color", palette.getColor("light"))
+        root.style.setProperty("--hover-color", palette.getColor("medium"))
+        root.style.setProperty('--blue', 'lightblue');
+      }
+
+      const swapPalette = () => {
+        const palette = selectPalette();
+        artboard.updatePalette({ palette });
+        setPalette(palette);
+      }
+
+      const adjustHeader = () => {
+        const headerSpans = document.querySelectorAll("header span");
+        const upcased = document.querySelectorAll(".upcase");
+        upcased.forEach(u => u.classList.remove("upcase"));
+        headerSpans[Math.floor(Math.random() * headerSpans.length)].classList.add("upcase");
+        setTimeout(adjustHeader, 1500);
+      }
+
+      const slides = [
+        {
+          title: "ten print",
+          author: "unknown - commodore 64",
+          renderer: renderTenPrint,
+          delay: 0,
+        },
+        {
+          title: "hommage à dürer",
+          author: "vera molnár - 1982",
+          renderer: renderScribble,
+          delay: 0,
+        },
+        {
+          title: "gravel stones",
+          author: "george nees - 1966",
+          renderer: renderGravel,
+          delay: 0,
+        },
+        {
+          title: "initial grid",
+          author: null,
+          renderer: renderInitialGrid,
+          delay: 15,
+        },
+        {
+          title: "dots - 1",
+          author: null,
+          renderer: renderDots1,
+          delay: 5,
+        },
+        {
+          title: "dots - 2",
+          author: null,
+          renderer: renderDots2,
+          delay: 0,
+        },
+        {
+          title: "dots - 3",
+          author: null,
+          renderer: renderDots3,
+          delay: 0,
+        },
+        {
+          title: "dots - 4",
+          author: null,
+          renderer: renderDots4,
+          delay: 0,
+        },
+        {
+          title: "dots - 5",
+          author: null,
+          renderer: renderDots5,
+          delay: 0,
+        },
+        {
+          title: "dots - 6",
+          author: null,
+          renderer: renderDots6,
+          delay: 0,
+        },
+        {
+          title: "quarters",
+          author: null,
+          renderer: renderQuarters,
+          delay: 0,
+        },
+        {
+          title: "petals",
+          author: null,
+          renderer: renderPetal,
+          delay: 0,
+        },
+        {
+          title: "glitch",
+          author: null,
+          renderer: renderGlitch,
+          delay: 0,
+        },
+      ]
+    </script>
+  </body>
+</html>
