@@ -241,8 +241,9 @@ const renderQuarters = ({artboard, grid, delay = 0}) => {
     delay,
     cells: grid.cells,
     cellRenderer: ({artboard, cell}) => {
-      const position = Math.floor(Math.random() * 4)
+      const position = Math.floor(Math.random() * 5)
       const radius = cell.size;
+
       let startRadians, endRadians;
 
       if (position == 0) {
@@ -257,10 +258,13 @@ const renderQuarters = ({artboard, grid, delay = 0}) => {
         baseCellPoint = cell.br;
         startRadians = 1 * Math.PI;
         endRadians = 1.5 * Math.PI;
-      } else {
+      } else if (position == 3) {
         baseCellPoint = cell.bl;
         startRadians = 1.5 * Math.PI;
         endRadians = 2 * Math.PI;
+      } else {
+        // no op!
+        return
       }
 
       artboard.drawArc({
@@ -279,15 +283,20 @@ const renderPetal = ({artboard, grid, delay = 0}) => {
     delay,
     cells: grid.cells,
     cellRenderer: ({artboard, cell}) => {
-      const flip = cell.idx % 2 == 0;
+      const flip = cell.col % 2 == 0;
+      const skip = cell.row % 2 == 0;
       let controlPointAShift, controlPointBShift, endPointShift;
+
+      if (skip) {
+        return;
+      }
 
       if (flip) {
         for(i = 1; i <= 9; i++) {
           endPointShift = noise({ max: 4 * i, min: i });
           artboard.ctx.beginPath();
           artboard.ctx.fillStyle = artboard.getColor("light", { a: 0.3 / i });
-          artboard.ctx.moveTo(cell.tl.xPos - endPointShift, cell.tl.yPos - endPointShift)
+          artboard.ctx.moveTo(cell.tl.xPos + endPointShift, cell.tl.yPos + endPointShift)
           controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
           controlPointBShift = cell.size - controlPointAShift
           artboard.ctx.bezierCurveTo(
@@ -298,7 +307,7 @@ const renderPetal = ({artboard, grid, delay = 0}) => {
             cell.br.xPos + endPointShift,
             cell.br.yPos + endPointShift,
           )
-          artboard.ctx.moveTo(cell.tl.xPos - endPointShift, cell.tl.yPos - endPointShift)
+          artboard.ctx.moveTo(cell.tl.xPos + endPointShift, cell.tl.yPos + endPointShift)
           controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
           controlPointBShift = cell.size - controlPointAShift
           artboard.ctx.bezierCurveTo(
@@ -311,12 +320,40 @@ const renderPetal = ({artboard, grid, delay = 0}) => {
           )
           artboard.ctx.fill()
         }
+        for(i = 1; i <= 9; i++) {
+          endPointShift = noise({ max: 4 * i, min: i });
+          artboard.ctx.beginPath();
+          artboard.ctx.fillStyle = artboard.getColor("light", { a: 0.3 / i });
+          artboard.ctx.moveTo(cell.tr.xPos, cell.tr.yPos - endPointShift)
+          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
+          controlPointBShift = cell.size - controlPointAShift
+          artboard.ctx.bezierCurveTo(
+            cell.tr.xPos - controlPointAShift,
+            cell.tr.yPos + controlPointBShift,
+            cell.tr.xPos - controlPointAShift,
+            cell.tr.yPos + controlPointBShift,
+            cell.br.xPos,
+            cell.br.yPos + endPointShift,
+          )
+          artboard.ctx.moveTo(cell.tr.xPos, cell.tr.yPos - endPointShift)
+          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
+          controlPointBShift = cell.size - controlPointAShift
+          artboard.ctx.bezierCurveTo(
+            cell.tr.xPos + controlPointAShift,
+            cell.tr.yPos + controlPointBShift,
+            cell.tr.xPos + controlPointAShift,
+            cell.tr.yPos + controlPointBShift,
+            cell.br.xPos,
+            cell.br.yPos + endPointShift,
+          )
+          artboard.ctx.fill()
+        }
       } else {
         for(i = 1; i <= 9; i++) {
           endPointShift = noise({ max: 4 * i, min: i });
           artboard.ctx.beginPath();
           artboard.ctx.fillStyle = artboard.getColor("light", { a: 0.3 / i });
-          artboard.ctx.moveTo(cell.tr.xPos + endPointShift, cell.tr.yPos - endPointShift)
+          artboard.ctx.moveTo(cell.tr.xPos - endPointShift, cell.tr.yPos + endPointShift)
           controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
           controlPointBShift = cell.size - controlPointAShift
           artboard.ctx.bezierCurveTo(
@@ -327,7 +364,7 @@ const renderPetal = ({artboard, grid, delay = 0}) => {
             cell.bl.xPos - endPointShift,
             cell.bl.yPos + endPointShift,
           )
-          artboard.ctx.moveTo(cell.tr.xPos + endPointShift, cell.tr.yPos - endPointShift)
+          artboard.ctx.moveTo(cell.tr.xPos - endPointShift, cell.tr.yPos + endPointShift)
           controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
           controlPointBShift = cell.size - controlPointAShift
           artboard.ctx.bezierCurveTo(
