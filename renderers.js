@@ -107,7 +107,7 @@ const renderDots5 = ({artboard, grid, delay = 0}) => {
       const maxRadius = cell.size * 0.9;
       const minRadius = cell.size * 0.1;
       const radius = noise({ max: maxRadius, min: minRadius })
-      const alpha = 1 - radius / maxRadius;
+      const alpha = Math.random();
       const color = artboard.palette.getColor("light", { a: alpha });
       const xPos = noise({ max: cell.tl.xPos + 32, min: cell.tl.xPos - 32 });
       const yPos = noise({ max: cell.tl.yPos + 32, min: cell.tl.yPos - 32 });
