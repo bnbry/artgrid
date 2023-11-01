@@ -80,12 +80,33 @@
         text-align: right;
       }
 
+      @media (max-width: 1240px) {
+        aside {
+          height: 120px;
+        }
+
+        .controls {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        aside {
+          height: 160px;
+        }
+
+        .controls {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
       .button {
         background-color: var(--fg-color);
         color: var(--bg-color);
         padding: 10px;
         width: 100%;
         line-height: 20px;
+        max-height: 40px;
       }
 
       .button:hover {
