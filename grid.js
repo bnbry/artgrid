@@ -1,6 +1,6 @@
 const createGrid = ({ gridWidthPixels, gridHeightPixels, cellSizePixels }) => {
   const columnCount = vectorLength(gridWidthPixels, cellSizePixels);
-  const rowCount = vectorLength(gridWidthPixels, cellSizePixels);
+  const rowCount = vectorLength(gridHeightPixels, cellSizePixels);
   const cells = generateCells(rowCount, columnCount, cellSizePixels);
 
   return {
