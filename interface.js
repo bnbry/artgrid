@@ -28,7 +28,7 @@ const loadInterface = () => {
 
   document.querySelector("#render").addEventListener("click", (event) => {
     event.preventDefault();
-    swapPalette();
+    [flipPalette, swapPalette][Math.floor(Math.random() * 2)]();
     swapCellSize();
     render({ artboard, grid });
   });
@@ -42,6 +42,11 @@ const setPalette = () => {
 
 const swapPalette = () => {
   artboard.swapPalette();
+  setPalette();
+};
+
+const flipPalette = () => {
+  artboard.flipPalette();
   setPalette();
 };
 
