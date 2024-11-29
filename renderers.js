@@ -1,195 +1,30 @@
-const renderInitialGrid = ({artboard, grid, delay = 0}) => {
+const renderTenPrint = ({ artboard, grid }) => {
   renderCells({
     artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      let color = artboard.palette.getColor("light");
-      const width = cell.size - 1;
-      const height = cell.size - 1;
-      let lineWidth = 1;
-
-      artboard.drawRect({
-        width,
-        height,
-        lineWidth,
-        color,
-        ...cell.tl,
-      })
-    }
-  })
-};
-
-const renderDots1 = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const radius = Math.floor(cell.size * 0.2);
-
-      artboard.fillArc({
-        radius,
-        ...cell.tl,
-      })
-    },
-  })
-};
-
-const renderDots2 = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const maxRadius = cell.size * 0.5;
-      const minRadius = cell.size * 0.1;
-      const color = artboard.palette.getColor("light");
-      const radius = noise({ max: maxRadius, min: minRadius })
-
-      artboard.fillArc({
-        radius,
-        color,
-        ...cell.tl,
-      })
-    },
-  })
-};
-
-const renderDots3 = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const maxRadius = cell.size * 0.5;
-      const minRadius = cell.size * 0.1;
-      const radius = noise({ max: maxRadius, min: minRadius })
-      const alpha = Math.random();
-      const color = artboard.palette.getColor("light", { a: alpha });
-
-      artboard.fillArc({
-        color,
-        radius,
-        ...cell.tl,
-      })
-    },
-  })
-};
-
-const renderDots4 = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const maxRadius = cell.size * 0.9;
-      const minRadius = cell.size * 0.1;
-      const radius = noise({ max: maxRadius, min: minRadius })
-      const alpha = Math.random();
-      const color = artboard.palette.getColor("light", { a: alpha });
-
-      artboard.fillArc({
-        color,
-        radius,
-        ...cell.tl,
-      })
-    },
-  })
-};
-
-const renderDots5 = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const maxRadius = cell.size * 0.9;
-      const minRadius = cell.size * 0.1;
-      const radius = noise({ max: maxRadius, min: minRadius })
-      const alpha = Math.random();
-      const color = artboard.palette.getColor("light", { a: alpha });
-      const xPos = noise({ max: cell.tl.xPos + 32, min: cell.tl.xPos - 32 });
-      const yPos = noise({ max: cell.tl.yPos + 32, min: cell.tl.yPos - 32 });
-
-      artboard.fillArc({
-        color,
-        radius,
-        xPos,
-        yPos,
-      })
-    },
-  })
-};
-
-const renderDots6 = ({artboard, grid, delay = 0}) => {
-  animateCells({
-    artboard,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const maxRadius = cell.size * 1.5;
-      const minRadius = cell.size * 0.1;
-      let radius = noise({ max: maxRadius, min: minRadius })
-      let direction = sample([-1, 1]);
-      let xPos = noise({ max: cell.tl.xPos + 32, min: cell.tl.xPos - 32 });
-      let yPos = noise({ max: cell.tl.yPos + 32, min: cell.tl.yPos - 32 });
-
-      if (cell.data?.radius) {
-        direction = cell.data.direction;
-        radius = cell.data.radius + cell.data.direction;
-        xPos = cell.data.xPos;
-        yPos = cell.data.yPos;
-
-        if (direction > 0 && radius > maxRadius) {
-          direction = -1;
-        } else if (direction < 0 && radius < minRadius) {
-          direction = 1;
-        }
-      }
-
-      const alpha = Math.max(1 - radius / maxRadius, 0.1);
-      const color = artboard.getColor("light", { a: alpha });
-      cell.data = { radius, direction, xPos, yPos }
-
-      artboard.fillArc({
-        color,
-        radius,
-        xPos,
-        yPos,
-      })
-    },
-  })
-};
-
-const renderTenPrint = ({artboard, grid, delay = 0}) => {
-  //renderInitialGrid({artboard, grid, delay})
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const rightToLeft = coinToss();
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const rightToLeft = coinFlip();
       const lineCap = "square";
       const lineWidth = 4;
-      let color = artboard.getColor("light");
+      let color = artboard.inkColor();
       let fromCellPoint, toCellPoint;
 
-      if(rightToLeft) {
-        fromCellPoint = cell.tr;
-        toCellPoint = cell.bl;
+      if (rightToLeft) {
+        fromCellPoint = cell.topRight;
+        toCellPoint = cell.bottomLeft;
       } else {
-        fromCellPoint = cell.tl;
-        toCellPoint = cell.br;
+        fromCellPoint = cell.topLeft;
+        toCellPoint = cell.bottomRight;
       }
 
-      const { xPos: xFromPos, yPos: yFromPos } = fromCellPoint;
-      const { xPos: xToPos, yPos: yToPos } = toCellPoint;
+      const { x: xStart, y: yStart } = fromCellPoint;
+      const { x: xFinish, y: yFinish } = toCellPoint;
 
       artboard.drawLine({
-        xFromPos,
-        yFromPos,
-        xToPos,
-        yToPos,
+        xStart,
+        yStart,
+        xFinish,
+        yFinish,
         lineCap,
         lineWidth,
         color,
@@ -198,289 +33,351 @@ const renderTenPrint = ({artboard, grid, delay = 0}) => {
   });
 };
 
-const renderScribble = ({artboard, grid, delay = 0}) => {
+const renderScribble = ({ artboard, grid }) => {
   renderCells({
     artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      if (coinFlip()) {
+        return;
+      }
+
       const lineCap = "square";
       const lineWidth = 1;
-      const xBounds = { min: cell.tl.xPos + cell.size * 0.05, max: cell.br.xPos - cell.size * 0.05 };
-      const yBounds = { min: cell.tl.yPos + cell.size * 0.05, max: cell.br.yPos - cell.size * 0.05 };
+      const xBounds = {
+        min: cell.topLeft.x - cell.size,
+        max: cell.bottomRight.x + cell.size,
+      };
+      const yBounds = {
+        min: cell.topLeft.y - cell.size,
+        max: cell.bottomRight.y + cell.size,
+      };
 
-      let xFromPos = noise(xBounds)
-      let yFromPos = noise(yBounds)
+      let xStart = noise(xBounds);
+      let yStart = noise(yBounds);
 
-      for(i = 1; i <= 16; i++) {
-        const xToPos = noise(xBounds)
-        const yToPos = noise(yBounds)
-        const alpha = 1;
-        const color = artboard.getColor("light", { a: alpha })
+      for (i = 1; i <= 20; i++) {
+        const xFinish = noise(xBounds);
+        const yFinish = noise(yBounds);
+        const alpha = i / 20;
+        const color = artboard.inkColor({ a: alpha });
 
         artboard.drawLine({
+          xStart,
+          yStart,
+          xFinish,
+          yFinish,
+          color,
           lineCap,
           lineWidth,
-          color,
-          xFromPos,
-          yFromPos,
-          xToPos,
-          yToPos,
-        })
+        });
 
-        xFromPos = xToPos;
-        yFromPos = yToPos;
+        xStart = xFinish;
+        yStart = yFinish;
       }
     },
   });
 };
 
-const renderQuarters = ({artboard, grid, delay = 0}) => {
+const renderScribble1 = ({ artboard, grid }) => {
   renderCells({
     artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const position = Math.floor(Math.random() * 5)
-      const radius = cell.size;
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const lineCap = "square";
+      const lineWidth = 1;
+      const xBounds = {
+        min: cell.topLeft.x - cell.size,
+        max: cell.bottomRight.x + cell.size,
+      };
+      const yBounds = {
+        min: cell.topLeft.y - cell.size,
+        max: cell.bottomRight.y + cell.size,
+      };
 
-      let startRadians, endRadians;
+      let xStart = noise(xBounds);
+      let yStart = noise(yBounds);
 
-      if (position == 0) {
-        baseCellPoint = cell.tl;
-        startRadians = 0 * Math.PI;
-        endRadians = 0.5 * Math.PI;
-      } else if (position == 1) {
-        baseCellPoint = cell.tr;
-        startRadians = 0.5 * Math.PI;
-        endRadians = 1 * Math.PI;
-      } else if (position == 2) {
-        baseCellPoint = cell.br;
-        startRadians = 1 * Math.PI;
-        endRadians = 1.5 * Math.PI;
-      } else if (position == 3) {
-        baseCellPoint = cell.bl;
-        startRadians = 1.5 * Math.PI;
-        endRadians = 2 * Math.PI;
-      } else {
-        // no op!
-        return
-      }
+      for (i = 1; i <= 100; i++) {
+        const xFinish = noise(xBounds);
+        const yFinish = noise(yBounds);
+        const alpha = i / 100;
+        const color = artboard.inkColor({ a: alpha });
 
-      artboard.drawArc({
-        radius,
-        startRadians,
-        endRadians,
-        ...baseCellPoint,
-      })
-    },
-  })
-};
+        artboard.drawLine({
+          xStart,
+          yStart,
+          xFinish,
+          yFinish,
+          color,
+          lineCap,
+          lineWidth,
+        });
 
-const renderPetal = ({artboard, grid, delay = 0}) => {
-  renderCells({
-    artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      let flip = cell.col % 2 == 0;
-      const swap = cell.row % 2 == 1;
-      let controlPointAShift, controlPointBShift, endPointShift;
-
-      if (swap) {
-        flip = !flip;
-      }
-
-      if (flip) {
-        for(i = 1; i <= 5; i++) {
-          endPointShift = noise({ max: 4 * i, min: i });
-          artboard.ctx.beginPath();
-          artboard.ctx.fillStyle = artboard.getColor("light", { a: 0.1 * i });
-          artboard.ctx.moveTo(cell.tl.xPos + endPointShift, cell.tl.yPos + endPointShift)
-          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
-          controlPointBShift = cell.size - controlPointAShift
-          artboard.ctx.bezierCurveTo(
-            cell.tl.xPos + controlPointAShift,
-            cell.tl.yPos + controlPointBShift,
-            cell.tl.xPos + controlPointAShift,
-            cell.tl.yPos + controlPointBShift,
-            cell.br.xPos + endPointShift,
-            cell.br.yPos + endPointShift,
-          )
-          artboard.ctx.moveTo(cell.tl.xPos + endPointShift, cell.tl.yPos + endPointShift)
-          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
-          controlPointBShift = cell.size - controlPointAShift
-          artboard.ctx.bezierCurveTo(
-            cell.tl.xPos + controlPointBShift,
-            cell.tl.yPos + controlPointAShift,
-            cell.tl.xPos + controlPointBShift,
-            cell.tl.yPos + controlPointAShift,
-            cell.br.xPos + endPointShift,
-            cell.br.yPos + endPointShift,
-          )
-          artboard.ctx.fill()
-        }
-      } else {
-        for(i = 1; i <= 5; i++) {
-          endPointShift = noise({ max: 4 * i, min: i });
-          artboard.ctx.beginPath();
-          artboard.ctx.fillStyle = artboard.getColor("light", { a: 0.1 * i });
-          artboard.ctx.moveTo(cell.tr.xPos - endPointShift, cell.tr.yPos + endPointShift)
-          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
-          controlPointBShift = cell.size - controlPointAShift
-          artboard.ctx.bezierCurveTo(
-            cell.tr.xPos - controlPointAShift,
-            cell.tr.yPos + controlPointBShift,
-            cell.tr.xPos - controlPointAShift,
-            cell.tr.yPos + controlPointBShift,
-            cell.bl.xPos - endPointShift,
-            cell.bl.yPos + endPointShift,
-          )
-          artboard.ctx.moveTo(cell.tr.xPos - endPointShift, cell.tr.yPos + endPointShift)
-          controlPointAShift = noise({min: cell.size * 0.6, max: cell.size})
-          controlPointBShift = cell.size - controlPointAShift
-          artboard.ctx.bezierCurveTo(
-            cell.tr.xPos - controlPointBShift,
-            cell.tr.yPos + controlPointAShift,
-            cell.tr.xPos - controlPointBShift,
-            cell.tr.yPos + controlPointAShift,
-            cell.bl.xPos - endPointShift,
-            cell.bl.yPos + endPointShift,
-          )
-          artboard.ctx.fill()
-        }
+        xStart = xFinish;
+        yStart = yFinish;
       }
     },
-  })
+  });
 };
 
-const renderGravel = ({artboard, grid, delay = 0}) => {
+const renderScribble2 = ({ artboard, grid }) => {
   renderCells({
     artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
-      const color = artboard.palette.getColor("light");
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const lineCap = "square";
+      const lineWidth = 1;
+      const xBounds = {
+        min: cell.topLeft.x + cell.size * 0.05,
+        max: cell.bottomRight.x - cell.size * 0.05,
+      };
+      const yBounds = {
+        min: cell.topLeft.y + cell.size * 0.05,
+        max: cell.bottomRight.y - cell.size * 0.05,
+      };
+
+      let xStart = noise(xBounds);
+      let yStart = noise(yBounds);
+
+      for (i = 1; i <= 20; i++) {
+        const xFinish = noise(xBounds);
+        const yFinish = noise(yBounds);
+        const alpha = 1;
+        const color = artboard.inkColor({ a: alpha });
+
+        artboard.drawLine({
+          xStart,
+          yStart,
+          xFinish,
+          yFinish,
+          color,
+          lineCap,
+          lineWidth,
+        });
+
+        xStart = xFinish;
+        yStart = yFinish;
+      }
+    },
+  });
+};
+
+const renderScribble3 = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const lineCap = "square";
+      const lineWidth = 1;
+      const xBounds = {
+        min: cell.topLeft.x + cell.size * 0.025,
+        max: cell.bottomRight.x - cell.size * 0.025,
+      };
+      const yBounds = {
+        min: cell.topLeft.y + cell.size * 0.025,
+        max: cell.bottomRight.y - cell.size * 0.025,
+      };
+
+      let xStart = noise(xBounds);
+      let yStart = noise(yBounds);
+
+      for (i = 1; i <= 50; i++) {
+        const xFinish = noise(xBounds);
+        const yFinish = noise(yBounds);
+        const alpha = i / 50;
+        const color = artboard.inkColor({ a: alpha });
+
+        artboard.drawLine({
+          xStart,
+          yStart,
+          xFinish,
+          yFinish,
+          color,
+          lineCap,
+          lineWidth,
+        });
+
+        xStart = xFinish;
+        yStart = yFinish;
+      }
+    },
+  });
+};
+
+const renderGravel = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const color = artboard.inkColor();
       const width = cell.size;
       const height = cell.size;
       const lineWidth = 2;
-      const xPos = noise({ max: cell.row, min: -cell.row });
-      const yPos = noise({ max: cell.row, min: -cell.row });
-      const plusOrMinus = coinToss() ? 1 : -1;
+      const x = noise({ max: cell.row, min: -cell.row });
+      const y = noise({ max: cell.row, min: -cell.row });
+      const plusOrMinus = coinFlip() ? 1 : -1;
       const rotateMultiplier = 2;
-      const rotateAmt = cell.row * Math.PI / 180 * (Math.random() * rotateMultiplier * plusOrMinus);
+      const rotateAmt =
+        ((cell.row * Math.PI) / 180) *
+        (Math.random() * rotateMultiplier * plusOrMinus);
 
-      artboard.translate(cell.tl.xPos, cell.tl.yPos)
-      artboard.rotate(rotateAmt)
+      artboard.translate(cell.topLeft.x, cell.topLeft.y);
+      artboard.rotate(rotateAmt);
       artboard.drawRect({
+        x,
+        y,
         width,
         height,
-        lineWidth,
         color,
-        xPos,
-        yPos,
-      })
-      artboard.restore()
+        lineWidth,
+      });
+      artboard.restore();
     },
-  })
+  });
 };
 
-const renderGlitch = ({artboard, grid, delay = 0}) => {
+const renderGlitch1 = ({ artboard, grid }) => {
+  for (i = 0; i < 20; i++) {
+    renderCells({
+      artboard,
+      grid,
+      cellRenderer: ({ artboard, cell }) => {
+        let lineWidth = sample([1, 2, 4, 8]);
+        let color = artboard.randomColor();
+
+        if (coinFlip()) {
+          artboard.fillRect({
+            x:
+              cell.topLeft.x +
+              Math.floor((Math.random() * cell.size) / lineWidth) -
+              cell.size,
+            y:
+              cell.topLeft.y +
+              Math.floor((Math.random() * cell.size) / lineWidth) -
+              cell.size,
+            width: Math.floor(Math.random() * cell.size),
+            height: Math.floor(Math.random() * cell.size),
+            color,
+          });
+        } else {
+          artboard.drawRect({
+            x: cell.topLeft.x + Math.random() * cell.size - cell.size,
+            y: cell.topLeft.y + Math.random() * cell.size - cell.size,
+            width: Math.random() * i * cell.size,
+            height: Math.random() * i * cell.size,
+            lineWidth,
+            color,
+          });
+        }
+      },
+    });
+  }
+};
+
+const renderGlitch = ({ artboard, grid }) => {
   renderCells({
     artboard,
-    delay,
-    cells: grid.cells,
-    cellRenderer: ({artboard, cell}) => {
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
       let lineWidth = 2;
-      let color = artboard.getColor("light");
+      let color = artboard.inkColor();
       const rectWidth = Math.floor(Math.random() * cell.size);
-      const innerRectHeight = Math.floor(Math.random() * cell.size) / 2;
 
       artboard.fillRect({
-        xPos: cell.x + Math.floor(Math.random() * rectWidth),
-        yPos: cell.y + Math.floor(Math.random() * cell.size),
+        x: cell.topLeft.x + Math.floor(Math.random() * rectWidth),
+        y: cell.topLeft.y + Math.floor(Math.random() * cell.size),
         width: rectWidth,
-        height: cell.size,
-        color,
-      })
-
-      lineWidth = 1;
-      artboard.drawRect({
-        xPos: cell.x + Math.random() * cell.size,
-        yPos: cell.y + Math.random() * innerRectHeight,
-        width: Math.random() * cell.size,
-        height:innerRectHeight,
-        lineWidth,
+        height: Math.random() * cell.size + cell.size * 0.25,
         color,
       });
 
-      // color = artboard.getColor("medium");
-      lineWidth = 2;
-      artboard.drawRect({
-        xPos: cell.x + Math.random() * cell.size,
-        yPos: cell.y + Math.random() * cell.size,
-        width: Math.random() * cell.size,
-        height: cell.size,
-        lineWidth,
-        color,
+      let colors = [
+        artboard.baseColor(),
+        artboard.inkColor(),
+        artboard.baseColor(),
+        artboard.inkColor(),
+        artboard.baseColor(),
+      ];
+
+      colors.forEach((color, index) => {
+        artboard.fillRect({
+          x: cell.topLeft.x + Math.floor((Math.random() * cell.size) / index),
+          y: cell.topLeft.y + Math.floor((Math.random() * cell.size) / index),
+          width: Math.floor(Math.random() * cell.size * index),
+          height: Math.floor(Math.random() * cell.size * index),
+          color,
+        });
       });
 
-      color = artboard.getColor("dark");
+      colors.forEach((color, index) => {
+        artboard.drawRect({
+          x: cell.topLeft.x + Math.random() * cell.size,
+          y: cell.topLeft.y + Math.random() * cell.size,
+          width: Math.random() * cell.size,
+          height: Math.random() * cell.size,
+          lineWidth: index + 1,
+          color,
+        });
+      });
+
+      color = artboard.inkColor();
+
       artboard.fillRect({
-        xPos: cell.x + Math.floor(Math.random() * cell.size / 4),
-        yPos: cell.y + Math.floor(Math.random() * cell.size / 4),
+        x: cell.topLeft.x + Math.floor(Math.random() * cell.size),
+        y: cell.topLeft.y + Math.floor(Math.random() * cell.size),
         width: Math.floor(Math.random() * cell.size),
         height: Math.floor(Math.random() * cell.size),
         color,
       });
+
+      lineWidth = sample([10, 20]);
+      artboard.drawRect({
+        x: cell.topLeft.x + Math.random() * sample([1, 2, 3]) * cell.size,
+        y: cell.topLeft.y + Math.random() * sample([1, 2, 3]) * cell.size,
+        width: Math.random() * sample([5, 10, 15]) * cell.size,
+        height: Math.random() * sample([5, 10, 15]) * cell.size,
+        lineWidth,
+        color,
+      });
     },
   });
-}
+};
 
-const renderCells = ({artboard, cells, cellRenderer, delay}) => {
-  cells.forEach(async (cell, index) => {
-    if (delay > 0) {
-      await sleep(delay * index)
-    }
-    cellRenderer({artboard, cell});
-  })
-}
-
-const animateCells = ({cellRenderer, artboard, cells, iterations = 240, fps = 30}) => {
-  const delay = 0;
-  const tick = 1000 / fps;
-
-  artboard.clear();
-
-  renderCells({
-    artboard,
-    delay,
-    cells,
-    cellRenderer,
-  })
-
-  iterations = iterations - 1;
-
-  if (iterations > 0) {
-    setTimeout(() => animateCells({cellRenderer, artboard, iterations, cells, fps}), tick)
-  }
-}
+const renderCells = ({ artboard, grid, cellRenderer }) => {
+  grid.cells.forEach((cell) => {
+    cellRenderer({ artboard, cell });
+  });
+};
 
 // Utilities
-
-// randomly select an element from collection
-const sample = (collection) => {
-  return collection[noise({ max: collection.length })];
-}
 
 // random integer between min and max
 const noise = ({ min = 0, max = 1 }) => {
   return Math.floor(Math.random() * (max - min) + min);
-}
+};
 
-const coinToss = () => {
-  return Math.random() >= 0.5;
-}
+// randomly select an element from collection
+const sample = (collection) => {
+  return collection[noise({ max: collection.length })];
+};
 
-// sleep x milliseconds
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+// randomly select true or false
+const coinFlip = () => {
+  return sample([true, false]);
+};
+
+const render = ({ artboard, grid }) => {
+  const renderers = [
+    renderTenPrint,
+    renderScribble,
+    renderScribble1,
+    renderScribble2,
+    renderScribble3,
+    renderGravel,
+    renderGlitch1,
+    renderGlitch,
+  ];
+
+  sample(renderers)({ artboard, grid });
+};
