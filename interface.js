@@ -1,4 +1,4 @@
-let cellSizes = [16, 32, 64, 128];
+let cellSizes = [32, 64, 128];
 let cellSizePixels = 64;
 let artboard = {};
 let grid = {};
@@ -19,25 +19,29 @@ const loadInterface = () => {
 
   setPalette();
 
-  document.querySelector("#clear").addEventListener("click", (event) => {
-    event.preventDefault();
-    swapPalette();
-    grid.resize(cellSizePixels);
-    artboard.clear();
-  });
-
   document.querySelector("#render").addEventListener("click", (event) => {
     event.preventDefault();
     [flipPalette, swapPalette][Math.floor(Math.random() * 2)]();
     swapCellSize();
+    grid.resize(cellSizePixels);
+    artboard.clear();
     render({ artboard, grid });
+  });
+
+  document.querySelector("#download").addEventListener("click", (event) => {
+    event.preventDefault();
+    let imageData = canvas.toDataURL();
+    let downloader = document.createElement("a");
+    downloader.download = "artgrid.png";
+    downloader.href = imageData;
+    downloader.click();
   });
 };
 
 const setPalette = () => {
   const root = document.querySelector(":root");
-  root.style.setProperty("--bg-color", artboard.baseColor());
-  root.style.setProperty("--fg-color", artboard.inkColor());
+  root.style.setProperty("--bg-color", artboard.bgColor());
+  root.style.setProperty("--fg-color", artboard.fgColor());
 };
 
 const swapPalette = () => {

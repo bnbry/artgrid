@@ -10,23 +10,32 @@ class Artboard {
     this.canvas.height = this.height * this.dpr;
     this.ctx = this.canvas.getContext("2d");
     this.palette = selectPalette();
+    this.inkChance = Math.random();
     this.restore();
     this.clear();
   }
 
-  baseColor(overrides = {}) {
-    return this.palette.baseColor(overrides);
+  bgColor(overrides = {}) {
+    return this.palette.getColor("bg", overrides);
+  }
+
+  fgColor(overrides = {}) {
+    return this.palette.getColor("ink", overrides);
   }
 
   inkColor(overrides = {}) {
-    return this.palette.inkColor(overrides);
+    if (Math.random() > this.inkChance) {
+      return this.palette.getColor("blend", overrides);
+    } else {
+      return this.palette.getColor("ink", overrides);
+    }
   }
 
   randomColor(overrides = {}) {
     if (Math.random() * 2 > 1) {
       return this.inkColor(overrides);
     } else {
-      return this.baseColor(overrides);
+      return this.bgColor(overrides);
     }
   }
 
@@ -38,6 +47,7 @@ class Artboard {
 
   swapPalette() {
     this.palette = selectPalette();
+    this.inkChance = Math.random();
     this.restore();
     this.clear();
   }
@@ -48,7 +58,7 @@ class Artboard {
       y: 0,
       width: this.width,
       height: this.height,
-      color: this.baseColor(),
+      color: this.bgColor(),
     });
   }
 
@@ -101,12 +111,14 @@ class Artboard {
 // Palette
 
 const BASE_COLOR_VALUES = {
-  base: 15,
+  bg: 15,
+  blend: 145,
   ink: 220,
 };
 
 const SHIFT_COLOR_VALUES = {
-  base: 5,
+  bg: 5,
+  blend: 90,
   ink: 20,
 };
 
@@ -117,7 +129,7 @@ const PALETTE_MODIFIERS = [
   { r: 0, g: 1, b: 1, a: 1, theme: "cyan" },
   { r: 0, g: 0, b: 1, a: 1, theme: "blue" },
   { r: 1, g: 0, b: 1, a: 1, theme: "magenta" },
-  { r: 1, g: 1, b: 1, a: 1, theme: "grey" },
+  //{ r: 1, g: 1, b: 1, a: 1, theme: "grey" },
 ];
 
 const selectPalette = () => {
@@ -125,21 +137,15 @@ const selectPalette = () => {
   const mod = PALETTE_MODIFIERS[randomModIndex];
 
   return {
-    base: buildRGBA(mod, "base"),
+    bg: buildRGBA(mod, "bg"),
     ink: buildRGBA(mod, "ink"),
+    blend: buildRGBA(mod, "blend"),
     theme: mod.theme,
     flip() {
-      const _ink = this.base;
-      const _base = this.ink;
-      this.base = _base;
+      const _ink = this.bg;
+      const _bg = this.ink;
+      this.bg = _bg;
       this.ink = _ink;
-    },
-    baseColor(overrides = {}) {
-      color = this.getColor("base", overrides);
-      return color;
-    },
-    inkColor(overrides = {}) {
-      return this.getColor("ink", overrides);
     },
     getColor(name, overrides = {}) {
       const c = {

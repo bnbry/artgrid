@@ -102,7 +102,7 @@ const renderScribble1 = ({ artboard, grid }) => {
         const xFinish = noise(xBounds);
         const yFinish = noise(yBounds);
         const alpha = i / 100;
-        const color = artboard.inkColor({ a: alpha });
+        let color = artboard.inkColor({ a: alpha });
 
         artboard.drawLine({
           xStart,
@@ -205,12 +205,46 @@ const renderScribble3 = ({ artboard, grid }) => {
   });
 };
 
+const renderGravel1 = ({ artboard, grid }) => {
+  for (i = 0; i < 20; i++) {
+    renderCells({
+      artboard,
+      grid,
+      cellRenderer: ({ artboard, cell }) => {
+        let color = artboard.inkColor();
+        const width = cell.size;
+        const height = cell.size;
+        const lineWidth = 2;
+        const x = noise({ max: cell.row, min: -cell.row });
+        const y = noise({ max: cell.row, min: -cell.row });
+        const plusOrMinus = coinFlip() ? 1 : -1;
+        const rotateMultiplier = 2;
+        const rotateAmt =
+          ((cell.row * Math.PI) / 180) *
+          (Math.random() * rotateMultiplier * plusOrMinus);
+
+        artboard.translate(cell.center.x, cell.center.y);
+        artboard.rotate(rotateAmt);
+        artboard.drawRect({
+          x: x - cell.size / 2,
+          y: y - cell.size / 2,
+          width,
+          height,
+          color,
+          lineWidth,
+        });
+        artboard.restore();
+      },
+    });
+  }
+};
+
 const renderGravel = ({ artboard, grid }) => {
   renderCells({
     artboard,
     grid,
     cellRenderer: ({ artboard, cell }) => {
-      const color = artboard.inkColor();
+      let color = artboard.inkColor();
       const width = cell.size;
       const height = cell.size;
       const lineWidth = 2;
@@ -218,15 +252,15 @@ const renderGravel = ({ artboard, grid }) => {
       const y = noise({ max: cell.row, min: -cell.row });
       const plusOrMinus = coinFlip() ? 1 : -1;
       const rotateMultiplier = 2;
+      const rotatePlacement = (cell.row / cell.rowCount) * 50;
       const rotateAmt =
-        ((cell.row * Math.PI) / 180) *
-        (Math.random() * rotateMultiplier * plusOrMinus);
+        ((rotatePlacement * Math.PI) / 180) * (Math.random() * plusOrMinus);
 
-      artboard.translate(cell.topLeft.x, cell.topLeft.y);
+      artboard.translate(cell.center.x, cell.center.y);
       artboard.rotate(rotateAmt);
       artboard.drawRect({
-        x,
-        y,
+        x: x - cell.size / 2,
+        y: y - cell.size / 2,
         width,
         height,
         color,
@@ -275,6 +309,75 @@ const renderGlitch1 = ({ artboard, grid }) => {
   }
 };
 
+const renderWeb = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      let lineWidth = 2;
+      let color = artboard.inkColor();
+      const rectWidth = Math.floor(Math.random() * cell.size);
+
+      artboard.fillRect({
+        x: cell.topLeft.x + Math.floor(Math.random() * rectWidth),
+        y: cell.topLeft.y + Math.floor(Math.random() * cell.size),
+        width: rectWidth,
+        height: Math.random() * cell.size + cell.size * 0.25,
+        color,
+      });
+
+      let colors = [
+        artboard.bgColor(),
+        artboard.inkColor(),
+        artboard.bgColor(),
+        artboard.inkColor(),
+        artboard.bgColor(),
+      ];
+
+      colors.forEach((color, index) => {
+        artboard.fillRect({
+          x: cell.topLeft.x + Math.floor((Math.random() * cell.size) / index),
+          y: cell.topLeft.y + Math.floor((Math.random() * cell.size) / index),
+          width: Math.floor(Math.random() * cell.size * index),
+          height: Math.floor(Math.random() * cell.size * index),
+          color,
+        });
+      });
+
+      colors.forEach((color, index) => {
+        artboard.drawRect({
+          x: cell.topLeft.x + Math.random() * cell.size,
+          y: cell.topLeft.y + Math.random() * cell.size,
+          width: Math.random() * cell.size,
+          height: Math.random() * cell.size,
+          lineWidth: index + 1,
+          color,
+        });
+      });
+
+      color = artboard.inkColor();
+
+      artboard.fillRect({
+        x: cell.topLeft.x + Math.floor(Math.random() * cell.size),
+        y: cell.topLeft.y + Math.floor(Math.random() * cell.size),
+        width: Math.floor(Math.random() * cell.size),
+        height: Math.floor(Math.random() * cell.size),
+        color,
+      });
+
+      lineWidth = sample([10, 20]);
+      artboard.drawRect({
+        x: cell.topLeft.x + Math.random() * sample([1, 2, 3]) * cell.size,
+        y: cell.topLeft.y + Math.random() * sample([1, 2, 3]) * cell.size,
+        width: Math.random() * sample([5, 10, 15]) * cell.size,
+        height: Math.random() * sample([5, 10, 15]) * cell.size,
+        lineWidth,
+        color,
+      });
+    },
+  });
+};
+
 const renderGlitch = ({ artboard, grid }) => {
   renderCells({
     artboard,
@@ -293,11 +396,11 @@ const renderGlitch = ({ artboard, grid }) => {
       });
 
       let colors = [
-        artboard.baseColor(),
+        artboard.bgColor(),
         artboard.inkColor(),
-        artboard.baseColor(),
+        artboard.bgColor(),
         artboard.inkColor(),
-        artboard.baseColor(),
+        artboard.bgColor(),
       ];
 
       colors.forEach((color, index) => {
@@ -375,8 +478,10 @@ const render = ({ artboard, grid }) => {
     renderScribble2,
     renderScribble3,
     renderGravel,
+    renderGravel1,
     renderGlitch1,
     renderGlitch,
+    renderWeb,
   ];
 
   sample(renderers)({ artboard, grid });
