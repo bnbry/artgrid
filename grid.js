@@ -13,7 +13,7 @@ const createGrid = ({ gridWidthPixels, gridHeightPixels, cellSizePixels }) => {
     resize(cellSizePixels) {
       this.cellSizePixels = cellSizePixels;
       this.columnCount = vectorLength(gridWidthPixels, cellSizePixels);
-      this.rowCount = vectorLength(gridWidthPixels, cellSizePixels);
+      this.rowCount = vectorLength(gridHeightPixels, cellSizePixels);
       this.cells = generateCells(
         this.rowCount,
         this.columnCount,
