@@ -12,8 +12,8 @@ const createGrid = ({ gridWidthPixels, gridHeightPixels, cellSizePixels }) => {
     cells,
     resize(cellSizePixels) {
       this.cellSizePixels = cellSizePixels;
-      this.columnCount = Math.ceil(this.gridWidthPixels / cellSizePixels);
-      this.rowCount = Math.ceil(this.gridHeightPixels / cellSizePixels);
+      this.columnCount = vectorLength(gridWidthPixels, cellSizePixels);
+      this.rowCount = vectorLength(gridWidthPixels, cellSizePixels);
       this.cells = generateCells(
         this.rowCount,
         this.columnCount,
@@ -33,10 +33,11 @@ const vectorLength = (gridDimensionPixels, cellDimensionPixels) => {
 
 const generateCells = (rowCount, columnCount, size) => {
   let cells = [];
+  let index = 0;
+  let flourish = Math.floor(Math.random() * rowCount * columnCount);
 
-  for (let i = -1; i < rowCount + 1; i++) {
-    for (let j = -1; j < columnCount + 1; j++) {
-      const index = i * columnCount + j;
+  for (let i = -1; i < rowCount - 1; i++) {
+    for (let j = -1; j < columnCount - 1; j++) {
       const col = j;
       const row = i;
       const x = size * col;
@@ -47,8 +48,11 @@ const generateCells = (rowCount, columnCount, size) => {
         index,
         col,
         row,
+        rowCount,
+        columnCount,
         size,
         data,
+        flourish: flourish == index,
         center: {
           x: Math.floor(x + size / 2),
           y: Math.floor(y + size / 2),
@@ -58,6 +62,8 @@ const generateCells = (rowCount, columnCount, size) => {
         bottomRight: { x: x + size, y: y + size },
         bottomLeft: { x, y: y + size },
       });
+
+      index++;
     }
   }
 

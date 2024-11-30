@@ -35,7 +35,7 @@
       }
 
       header {
-        background-color: var(--bg-color);
+        /* background-color: var(--bg-color); */
         position: fixed;
         top: 10px;
         left: 10px;
@@ -80,20 +80,12 @@
       }
 
       @media (max-width: 1240px) {
-        aside {
-          height: 120px;
-        }
-
         .controls {
           grid-template-columns: repeat(3, 1fr);
         }
       }
 
       @media (max-width: 640px) {
-        aside {
-          height: 160px;
-        }
-
         .controls {
           grid-template-columns: repeat(2, 1fr);
         }
@@ -147,7 +139,7 @@
     <aside>
       <div class="controls">
         <div id="render" class="button">render</div>
-        <div id="clear" class="button">clear</div>
+        <div id="download" class="button">download</div>
       </div>
     </aside>
     <script>
