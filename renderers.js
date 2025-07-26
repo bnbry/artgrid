@@ -480,6 +480,168 @@ const renderGrowingHuddle = ({ artboard, grid }) => {
   });
 };
 
+const renderHuddledRects = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const numRects = noise({ min: 4, max: 10 });
+      for (let i = 0; i < numRects; i++) {
+        // Offset from center, but not too far
+        const offsetX = (Math.random() - 0.5) * cell.size * 0.4;
+        const offsetY = (Math.random() - 0.5) * cell.size * 0.4;
+        const centerX = cell.center.x + offsetX;
+        const centerY = cell.center.y + offsetY;
+        // Size varies, but not too large
+        const width = noise({ min: cell.size * 0.15, max: cell.size * 0.6 });
+        const height = noise({ min: cell.size * 0.15, max: cell.size * 0.6 });
+        // Opacity varies
+        const alpha = Math.random() * 0.7 + 0.2;
+        const color = artboard.inkColor({ a: alpha });
+        artboard.fillRect({
+          x: centerX - width / 2,
+          y: centerY - height / 2,
+          width,
+          height,
+          color,
+        });
+      }
+    },
+  });
+};
+
+const renderRectsAndLines = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      // Draw several filled rectangles
+      const numFilledRects = noise({ min: 2, max: 5 });
+      for (let i = 0; i < numFilledRects; i++) {
+        const offsetX = (Math.random() - 0.5) * cell.size * 0.5;
+        const offsetY = (Math.random() - 0.5) * cell.size * 0.5;
+        const centerX = cell.center.x + offsetX;
+        const centerY = cell.center.y + offsetY;
+        // 20% chance to far exceed cell bounds
+        const exceed = Math.random() < 0.2;
+        const width = exceed
+          ? noise({ min: cell.size * 1.5, max: cell.size * 3 })
+          : noise({ min: cell.size * 0.15, max: cell.size * 0.5 });
+        const height = exceed
+          ? noise({ min: cell.size * 1.5, max: cell.size * 3 })
+          : noise({ min: cell.size * 0.15, max: cell.size * 0.5 });
+        const alpha = Math.random() * 0.6 + 0.3;
+        const color = artboard.inkColor({ a: alpha });
+        artboard.fillRect({
+          x: centerX - width / 2,
+          y: centerY - height / 2,
+          width,
+          height,
+          color,
+        });
+      }
+      // Draw several stroked rectangles
+      const numStrokedRects = noise({ min: 1, max: 4 });
+      for (let i = 0; i < numStrokedRects; i++) {
+        const offsetX = (Math.random() - 0.5) * cell.size * 0.5;
+        const offsetY = (Math.random() - 0.5) * cell.size * 0.5;
+        const centerX = cell.center.x + offsetX;
+        const centerY = cell.center.y + offsetY;
+        // 20% chance to far exceed cell bounds
+        const exceed = Math.random() < 0.2;
+        const width = exceed
+          ? noise({ min: cell.size * 1.5, max: cell.size * 3 })
+          : noise({ min: cell.size * 0.2, max: cell.size * 0.7 });
+        const height = exceed
+          ? noise({ min: cell.size * 1.5, max: cell.size * 3 })
+          : noise({ min: cell.size * 0.2, max: cell.size * 0.7 });
+        const lineWidth = noise({ min: 1, max: 5 });
+        const alpha = Math.random() * 0.5 + 0.2;
+        const color = artboard.inkColor({ a: alpha });
+        artboard.drawRect({
+          x: centerX - width / 2,
+          y: centerY - height / 2,
+          width,
+          height,
+          lineWidth,
+          color,
+        });
+      }
+      // Draw several lines
+      const numLines = noise({ min: 2, max: 6 });
+      for (let i = 0; i < numLines; i++) {
+        // 20% chance to far exceed cell bounds
+        const exceed = Math.random() < 0.2;
+        let xStart, yStart, xFinish, yFinish;
+        if (exceed) {
+          xStart = cell.center.x + (Math.random() - 0.5) * cell.size * 3;
+          yStart = cell.center.y + (Math.random() - 0.5) * cell.size * 3;
+          xFinish = cell.center.x + (Math.random() - 0.5) * cell.size * 3;
+          yFinish = cell.center.y + (Math.random() - 0.5) * cell.size * 3;
+        } else {
+          xStart = cell.center.x + (Math.random() - 0.5) * cell.size * 0.6;
+          yStart = cell.center.y + (Math.random() - 0.5) * cell.size * 0.6;
+          xFinish = cell.center.x + (Math.random() - 0.5) * cell.size * 0.6;
+          yFinish = cell.center.y + (Math.random() - 0.5) * cell.size * 0.6;
+        }
+        const lineWidth = noise({ min: 1, max: 4 });
+        const alpha = Math.random() * 0.7 + 0.2;
+        const color = artboard.inkColor({ a: alpha });
+        artboard.drawLine({
+          xStart,
+          yStart,
+          xFinish,
+          yFinish,
+          lineWidth,
+          color,
+        });
+      }
+    },
+  });
+};
+
+const renderCenterRectAndLineToOtherCell = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      // Draw a small rectangle at the center of the cell
+      const rectSize = cell.size * 0.2;
+      const rectColor = artboard.inkColor({ a: 0.9 });
+      artboard.fillRect({
+        x: cell.center.x - rectSize / 2,
+        y: cell.center.y - rectSize / 2,
+        width: rectSize,
+        height: rectSize,
+        color: rectColor,
+      });
+      // Find neighbor cells (adjacent: up, down, left, right)
+      const neighbors = grid.cells.filter((otherCell) => {
+        if (otherCell === cell) return false;
+        const sameRow = otherCell.row === cell.row;
+        const sameCol = otherCell.col === cell.col;
+        const rowDiff = Math.abs(otherCell.row - cell.row);
+        const colDiff = Math.abs(otherCell.col - cell.col);
+        // Only direct neighbors, not diagonals
+        return (sameRow && colDiff === 1) || (sameCol && rowDiff === 1);
+      });
+      if (neighbors.length > 0) {
+        const neighbor = sample(neighbors);
+        // Draw a line from this cell's center to the neighbor's center
+        const lineColor = artboard.inkColor({ a: 0.7 });
+        artboard.drawLine({
+          xStart: cell.center.x,
+          yStart: cell.center.y,
+          xFinish: neighbor.center.x,
+          yFinish: neighbor.center.y,
+          lineWidth: 2,
+          color: lineColor,
+        });
+      }
+    },
+  });
+};
+
 const renderCells = ({ artboard, grid, cellRenderer }) => {
   grid.cells.forEach((cell) => {
     cellRenderer({ artboard, cell });
@@ -516,6 +678,9 @@ const render = ({ artboard, grid }) => {
     renderGlitch,
     renderWeb,
     renderGrowingHuddle,
+    renderHuddledRects,
+    renderRectsAndLines,
+    renderCenterRectAndLineToOtherCell,
   ];
 
   sample(renderers)({ artboard, grid });
