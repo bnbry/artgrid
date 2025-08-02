@@ -447,6 +447,39 @@ const renderGlitch = ({ artboard, grid }) => {
   });
 };
 
+const renderGrowingHuddle = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      const numRects = noise({ min: 5, max: 11 }); // 5-10 rectangles
+      // Progress from 0 (top row) to 1 (bottom row)
+      const rowProgress =
+        cell.rowCount > 1 ? cell.row / (cell.rowCount - 1) : 0;
+      // Size range: top = 10-30%, bottom = 80-150%
+      const minSize = cell.size * (0.1 + 0.7 * rowProgress); // 0.1 to 0.8
+      const maxSize = cell.size * (0.3 + 1.2 * rowProgress); // 0.3 to 1.5
+      // Offset range: top = ±10%, bottom = ±80%
+      const maxOffset = cell.size * (0.1 + 0.7 * rowProgress); // 0.1 to 0.8
+      for (let i = 0; i < numRects; i++) {
+        const width = noise({ min: minSize, max: maxSize });
+        const height = noise({ min: minSize, max: maxSize });
+        const offsetX = noise({ min: -maxOffset, max: maxOffset });
+        const offsetY = noise({ min: -maxOffset, max: maxOffset });
+        const alpha = Math.random() * 0.6 + 0.2;
+        const color = artboard.inkColor({ a: alpha });
+        artboard.fillRect({
+          x: cell.center.x + offsetX - width / 2,
+          y: cell.center.y + offsetY - height / 2,
+          width,
+          height,
+          color,
+        });
+      }
+    },
+  });
+};
+
 const renderCells = ({ artboard, grid, cellRenderer }) => {
   grid.cells.forEach((cell) => {
     cellRenderer({ artboard, cell });
@@ -482,6 +515,7 @@ const render = ({ artboard, grid }) => {
     renderGlitch1,
     renderGlitch,
     renderWeb,
+    renderGrowingHuddle,
   ];
 
   sample(renderers)({ artboard, grid });
