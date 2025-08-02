@@ -447,7 +447,7 @@ const renderGlitch = ({ artboard, grid }) => {
   });
 };
 
-const renderHuddle = ({ artboard, grid }) => {
+const renderGrowingHuddle = ({ artboard, grid }) => {
   renderCells({
     artboard,
     grid,
@@ -505,17 +505,17 @@ const coinFlip = () => {
 
 const render = ({ artboard, grid }) => {
   const renderers = [
-    // renderTenPrint,
-    // renderScribble,
-    // renderScribble1,
-    // renderScribble2,
-    // renderScribble3,
-    // renderGravel,
-    // renderGravel1,
-    // renderGlitch1,
-    // renderGlitch,
-    // renderWeb,
-    renderHuddle,
+    renderTenPrint,
+    renderScribble,
+    renderScribble1,
+    renderScribble2,
+    renderScribble3,
+    renderGravel,
+    renderGravel1,
+    renderGlitch1,
+    renderGlitch,
+    renderWeb,
+    renderGrowingHuddle,
   ];
 
   sample(renderers)({ artboard, grid });
