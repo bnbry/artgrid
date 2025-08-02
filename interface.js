@@ -25,7 +25,8 @@ const loadInterface = () => {
     swapCellSize();
     grid.resize(cellSizePixels);
     artboard.clear();
-    render({ artboard, grid });
+    const selectedRenderer = document.querySelector("#renderer-select").value;
+    render({ artboard, grid, selectedRenderer });
   });
 
   document.querySelector("#download").addEventListener("click", (event) => {

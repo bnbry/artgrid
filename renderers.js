@@ -1600,8 +1600,8 @@ const coinFlip = () => {
   return sample([true, false]);
 };
 
-const render = ({ artboard, grid }) => {
-  const renderers = [
+const render = ({ artboard, grid, selectedRenderer = "random" }) => {
+  const renderers = {
     renderTenPrint,
     renderScribble,
     renderScribble1,
@@ -1635,7 +1635,14 @@ const render = ({ artboard, grid }) => {
     renderSpiralNest, // This renderer generated with AI
     renderCellConnections, // This renderer generated with AI
     renderCornerLines, // This renderer generated with AI
-  ];
+  };
 
-  sample(renderers)({ artboard, grid });
+  if (selectedRenderer === "random") {
+    sample(Object.values(renderers))({ artboard, grid });
+  } else if (renderers[selectedRenderer]) {
+    renderers[selectedRenderer]({ artboard, grid });
+  } else {
+    // Fallback to random if invalid selection
+    sample(Object.values(renderers))({ artboard, grid });
+  }
 };
