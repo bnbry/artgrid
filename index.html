@@ -106,6 +106,18 @@
         cursor: pointer;
       }
 
+      select.button {
+        border: none;
+        font-family: inherit;
+        font-size: inherit;
+        cursor: pointer;
+      }
+
+      select.button option {
+        background-color: var(--fg-color);
+        color: var(--bg-color);
+      }
+
       .info {
         background-color: var(--bg-color);
         color: var(--fg-color);
@@ -139,6 +151,42 @@
     <aside>
       <div class="controls">
         <div id="render" class="button">render</div>
+        <select id="renderer-select" class="button">
+          <option value="random">random</option>
+          <option value="renderTenPrint">ten print</option>
+          <option value="renderScribble">scribble</option>
+          <option value="renderScribble1">scribble 1</option>
+          <option value="renderScribble2">scribble 2</option>
+          <option value="renderScribble3">scribble 3</option>
+          <option value="renderGravel">gravel</option>
+          <option value="renderGravel1">gravel 1</option>
+          <option value="renderGlitch1">glitch 1</option>
+          <option value="renderGlitch">glitch</option>
+          <option value="renderWeb">web</option>
+          <option value="renderGrowingHuddle">growing huddle</option>
+          <option value="renderHuddledRects">huddled rects</option>
+          <option value="renderRectsAndLines">rects and lines</option>
+          <option value="renderCenterRectAndLineToOtherCell">center rect and line</option>
+          <option value="renderChaos">chaos</option>
+          <option value="renderShatter">shatter</option>
+          <option value="renderLargeShatter">large shatter</option>
+          <option value="renderFragments">fragments</option>
+          <option value="renderFragmentsUnbound">fragments unbound</option>
+          <option value="renderOverflowBursts">overflow bursts</option>
+          <option value="renderZigZag">zigzag</option>
+          <option value="renderBlocks">blocks</option>
+          <option value="renderRandomLines">random lines</option>
+          <option value="renderEveryPixelVertical">every pixel vertical</option>
+          <option value="renderHuddledRects2">huddled rects 2</option>
+          <option value="renderGrowingRects">growing rects</option>
+          <option value="renderGrowingLines">growing lines</option>
+          <option value="renderStringArt">string art</option>
+          <option value="renderQuarterRect">quarter rect</option>
+          <option value="renderConverge">converge</option>
+          <option value="renderSpiralNest">spiral nest</option>
+          <option value="renderCellConnections">cell connections</option>
+          <option value="renderCornerLines">corner lines</option>
+        </select>
         <div id="download" class="button">download</div>
       </div>
     </aside>
