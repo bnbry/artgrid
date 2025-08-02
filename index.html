@@ -76,7 +76,6 @@
         grid-template-columns: repeat(4, 1fr) repeat(2, 2fr);
         grid-gap: 10px;
         font-size: 16px;
-        text-align: right;
       }
 
       @media (max-width: 1240px) {
@@ -88,6 +87,10 @@
       @media (max-width: 640px) {
         .controls {
           grid-template-columns: repeat(2, 1fr);
+        }
+
+        aside {
+          height: 100px;
         }
       }
 
@@ -186,6 +189,9 @@
           <option value="renderSpiralNest">spiral nest</option>
           <option value="renderCellConnections">cell connections</option>
           <option value="renderCornerLines">corner lines</option>
+          <option value="renderCornerPath">corner path</option>
+          <option value="renderEdgeLine">edge line</option>
+          <option value="renderRotatedRects">rotated rects</option>
         </select>
         <div id="download" class="button">download</div>
       </div>

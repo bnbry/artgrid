@@ -1577,6 +1577,185 @@ const renderCornerLines = ({ artboard, grid }) => {
   });
 };
 
+const renderCornerPath = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      // Choose starting corner: top-left or top-right
+      const startCorner = coinFlip() ? cell.topLeft : cell.topRight;
+
+      // Choose ending corner: bottom-left or bottom-right
+      const endCorner = coinFlip() ? cell.bottomLeft : cell.bottomRight;
+
+      // Generate two random points inside the cell
+      const point1 = {
+        x: noise({
+          min: cell.topLeft.x + cell.size * 0.1,
+          max: cell.bottomRight.x - cell.size * 0.1,
+        }),
+        y: noise({
+          min: cell.topLeft.y + cell.size * 0.1,
+          max: cell.bottomRight.y - cell.size * 0.1,
+        }),
+      };
+
+      const point2 = {
+        x: noise({
+          min: cell.topLeft.x + cell.size * 0.1,
+          max: cell.bottomRight.x - cell.size * 0.1,
+        }),
+        y: noise({
+          min: cell.topLeft.y + cell.size * 0.1,
+          max: cell.bottomRight.y - cell.size * 0.1,
+        }),
+      };
+
+      const lineWidth = noise({ min: 2, max: 6 });
+      const color = artboard.inkColor({ a: 0.8 });
+
+      // Draw the three line segments
+      // 1. From start corner to first random point
+      artboard.drawLine({
+        xStart: startCorner.x,
+        yStart: startCorner.y,
+        xFinish: point1.x,
+        yFinish: point1.y,
+        color,
+        lineWidth,
+        lineCap: "round",
+      });
+
+      // 2. From first random point to second random point
+      artboard.drawLine({
+        xStart: point1.x,
+        yStart: point1.y,
+        xFinish: point2.x,
+        yFinish: point2.y,
+        color,
+        lineWidth,
+        lineCap: "round",
+      });
+
+      // 3. From second random point to end corner
+      artboard.drawLine({
+        xStart: point2.x,
+        yStart: point2.y,
+        xFinish: endCorner.x,
+        yFinish: endCorner.y,
+        color,
+        lineWidth,
+        lineCap: "round",
+      });
+    },
+  });
+};
+
+const renderEdgeLine = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      // Choose a random edge: 0=top, 1=right, 2=bottom, 3=left
+      const edge = noise({ min: 0, max: 4 });
+
+      const lineWidth = noise({ min: 8, max: 16 }); // Thick line
+      const color = artboard.inkColor({ a: 0.9 });
+
+      let xStart, yStart, xFinish, yFinish;
+
+      if (edge === 0) {
+        // Top edge
+        xStart = cell.topLeft.x;
+        yStart = cell.topLeft.y;
+        xFinish = cell.topRight.x;
+        yFinish = cell.topRight.y;
+      } else if (edge === 1) {
+        // Right edge
+        xStart = cell.topRight.x;
+        yStart = cell.topRight.y;
+        xFinish = cell.bottomRight.x;
+        yFinish = cell.bottomRight.y;
+      } else if (edge === 2) {
+        // Bottom edge
+        xStart = cell.bottomLeft.x;
+        yStart = cell.bottomLeft.y;
+        xFinish = cell.bottomRight.x;
+        yFinish = cell.bottomRight.y;
+      } else {
+        // Left edge
+        xStart = cell.topLeft.x;
+        yStart = cell.topLeft.y;
+        xFinish = cell.bottomLeft.x;
+        yFinish = cell.bottomLeft.y;
+      }
+
+      artboard.drawLine({
+        xStart,
+        yStart,
+        xFinish,
+        yFinish,
+        color,
+        lineWidth,
+        lineCap: "square",
+      });
+    },
+  });
+};
+
+const renderRotatedRects = ({ artboard, grid }) => {
+  renderCells({
+    artboard,
+    grid,
+    cellRenderer: ({ artboard, cell }) => {
+      // Random number of rectangles per cell
+      const numRects = noise({ min: 0, max: 5 });
+
+      for (let i = 0; i < numRects; i++) {
+        // Random rotation angle for this rectangle
+        const rotationAngle = Math.random() * Math.PI * 2; // 0 to 2π radians
+
+        // Random rectangle dimensions
+        let width, height;
+
+        height = noise({ min: cell.size * 0.2, max: cell.size * 0.8 });
+        width = height * noise({ min: 2, max: 5 });
+
+        // Random position within the cell
+        const x = noise({
+          min: cell.topLeft.x + width * 0.5,
+          max: cell.bottomRight.x - width * 0.5,
+        });
+        const y = noise({
+          min: cell.topLeft.y + height * 0.5,
+          max: cell.bottomRight.y - height * 0.5,
+        });
+
+        // Random opacity
+        const alpha = Math.random() * 0.7 + 0.2; // 0.2 to 0.9
+        const color = artboard.inkColor({ a: alpha });
+
+        // Apply rotation around the cell center
+        artboard.translate(cell.center.x, cell.center.y);
+        artboard.rotate(rotationAngle);
+        artboard.translate(-cell.center.x, -cell.center.y);
+
+        // Draw the filled rectangle (no outline)
+        artboard.fillRect({
+          x: x - width / 2,
+          y: y - height / 2,
+          width,
+          height,
+          color,
+        });
+
+        // Restore the transformation
+        artboard.restore();
+      }
+    },
+  });
+};
+
 const renderCells = ({ artboard, grid, cellRenderer }) => {
   grid.cells.forEach((cell) => {
     cellRenderer({ artboard, cell });
@@ -1635,6 +1814,9 @@ const render = ({ artboard, grid, selectedRenderer = "random" }) => {
     renderSpiralNest, // This renderer generated with AI
     renderCellConnections, // This renderer generated with AI
     renderCornerLines, // This renderer generated with AI
+    renderCornerPath, // This renderer generated with AI
+    renderEdgeLine, // This renderer generated with AI
+    renderRotatedRects, // This renderer generated with AI
   };
 
   if (selectedRenderer === "random") {
